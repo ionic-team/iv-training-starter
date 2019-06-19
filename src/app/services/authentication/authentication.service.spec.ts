@@ -130,7 +130,7 @@ describe('AuthenticationService', () => {
         const req = httpTestingController.expectOne(`${environment.dataService}/login`);
         req.flush(response);
         httpTestingController.verify();
-        expect(identity.set).not.toHaveBeenCalled();
+        expect(identity.set).not.toHaveBeenCalledTimes(1);
       });
     });
   });
