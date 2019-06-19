@@ -1,14 +1,22 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>
-      Ionic Blank
-    </ion-title>
+    <ion-title>Tea Types</ion-title>
+
+    <ion-buttons slot="primary">
+      <ion-button icon-only (click)="logout()">
+        <ion-icon name="log-out"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <div class="ion-padding">
-    The world is your oyster.
-    <p>If you get lost, the <a target="_blank" rel="noopener" href="https://ionicframework.com/docs/">docs</a> will be your guide.</p>
-  </div>
+<ion-content padding>
+  <ion-list>
+    <ion-item *ngFor="let category of categories" (click)="editCategory(category.id)">
+      <ion-label>
+        <div class="title">{{category.name}}</div>
+        <div>{{category.description}}</div>
+      </ion-label>
+    </ion-item>
+  </ion-list>
 </ion-content>
