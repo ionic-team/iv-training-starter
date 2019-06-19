@@ -20,7 +20,7 @@ export class AuthenticationService {
         `${environment.dataService}/login`,
         {
           username: email,
-          password: password
+          password
         }
       )
       .pipe(flatMap(r => from(this.unpackResponse(r))));

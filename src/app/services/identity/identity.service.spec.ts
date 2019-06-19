@@ -1,8 +1,5 @@
 import { TestBed, inject } from '@angular/core/testing';
-import {
-  HttpClientTestingModule,
-  HttpTestingController
-} from '@angular/common/http/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
 import { Storage } from '@ionic/storage';
 
@@ -43,9 +40,7 @@ describe('IdentityService', () => {
           email: 'thank.you@forthefish.com'
         })
       );
-      const req = httpTestingController.expectOne(
-        `${environment.dataService}/users/current`
-      );
+      const req = httpTestingController.expectOne(`${environment.dataService}/users/current`);
       expect(req.request.method).toEqual('GET');
       req.flush({
         id: 42,
@@ -65,9 +60,7 @@ describe('IdentityService', () => {
           email: 'thank.you@forthefish.com'
         })
       );
-      const req = httpTestingController.expectOne(
-        `${environment.dataService}/users/current`
-      );
+      const req = httpTestingController.expectOne(`${environment.dataService}/users/current`);
       expect(req.request.method).toEqual('GET');
       req.flush({
         id: 42,
@@ -111,9 +104,7 @@ describe('IdentityService', () => {
   describe('remove', () => {
     beforeEach(() => {
       identity.get().subscribe();
-      const req = httpTestingController.expectOne(
-        `${environment.dataService}/users/current`
-      );
+      const req = httpTestingController.expectOne(`${environment.dataService}/users/current`);
       expect(req.request.method).toEqual('GET');
       req.flush({
         id: 42,
@@ -129,9 +120,7 @@ describe('IdentityService', () => {
       httpTestingController.verify();
       identity.remove();
       identity.get().subscribe();
-      const req = httpTestingController.expectOne(
-        `${environment.dataService}/users/current`
-      );
+      const req = httpTestingController.expectOne(`${environment.dataService}/users/current`);
       expect(req.request.method).toEqual('GET');
       req.flush({
         id: 42,
@@ -177,7 +166,7 @@ describe('IdentityService', () => {
         expect(storage.ready).toHaveBeenCalledTimes(1);
       });
 
-      it('gets the stored token', async() => {
+      it('gets the stored token', async () => {
         await identity.getToken();
         expect(storage.get).toHaveBeenCalledTimes(1);
         expect(storage.get).toHaveBeenCalledWith('auth-token');
