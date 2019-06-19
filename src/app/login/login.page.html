@@ -1,0 +1,32 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Login</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+  <form #loginForm="ngForm">
+    <ion-list>
+      <ion-item>
+        <ion-label position="floating">E-Mail Address</ion-label>
+        <ion-input type="email" name="email" [(ngModel)]="email" #emailInput="ngModel" required email></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Password</ion-label>
+        <ion-input type="password" name="password" [(ngModel)]="password" #passwordInput="ngModel" required></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <ion-button expand="full" [disabled]="!loginForm.form.valid" (click)="signInClicked()" color="tertiary">Sign in</ion-button>
+
+    <div *ngIf="emailInput.invalid && (emailInput.dirty || emailInput.touched)" class="error-message">
+      <div *ngIf="emailInput.errors.email">
+        E-Mail Address must have a valid format
+      </div>
+    </div>
+
+    <div class="error-message">
+      {{errorMessage}}
+    </div>
+  </form>
+</ion-content>
