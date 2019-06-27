@@ -6,6 +6,7 @@ import { Storage } from '@ionic/storage';
 import { createStorageMock } from '../../../../test/mocks';
 import { environment } from '../../../environments/environment';
 import { IdentityService } from './identity.service';
+import { User } from 'src/app/models/user';
 
 describe('IdentityService', () => {
   let httpTestingController: HttpTestingController;
@@ -82,22 +83,36 @@ describe('IdentityService', () => {
   });
 
   describe('set', () => {
-    it('sets the user, caching it', () => {
-      identity.set({
-        id: 314159,
-        firstName: 'Sherry',
-        lastName: 'Pigh',
-        email: 'alamode@test.org'
-      });
-      identity.get().subscribe(u =>
-        expect(u).toEqual({
+    const user: User = {
           id: 314159,
           firstName: 'Sherry',
           lastName: 'Pigh',
           email: 'alamode@test.org'
-        })
+    };
+
+    it('sets the user, caching it', async () => {
+      await identity.set( user, 'IAmToken');
+      identity.get().subscribe(u =>
+        expect(u).toEqual(user)
       );
       httpTestingController.verify();
+    });
+
+    it('waits for the storage to be ready', async () => {
+      await identity.set(user, 'IAmAToken');
+      expect(storage.ready).toHaveBeenCalledTimes(1);
+    });
+
+    it('sets the token', async () => {
+      await identity.set(user, 'IAmAToken');
+      expect(storage.set).toHaveBeenCalledTimes(1);
+      expect(storage.set).toHaveBeenCalledWith('auth-token', 'IAmAToken');
+    });
+
+    it('caches the token', async () => {
+      await identity.set(user, 'IAmAToken');
+      expect(await identity.getToken()).toEqual('IAmAToken');
+      expect(storage.get).not.toHaveBeenCalled();
     });
   });
 
@@ -115,10 +130,10 @@ describe('IdentityService', () => {
       httpTestingController.verify();
     });
 
-    it('remove the user from the cache (thus forcing a GET on the next get())', () => {
+    it('remove the user from the cache (thus forcing a GET on the next get())', async () => {
       identity.get().subscribe();
       httpTestingController.verify();
-      identity.remove();
+      await identity.remove();
       identity.get().subscribe();
       const req = httpTestingController.expectOne(`${environment.dataService}/users/current`);
       expect(req.request.method).toEqual('GET');
@@ -130,59 +145,37 @@ describe('IdentityService', () => {
       });
       httpTestingController.verify();
     });
+
+    it('removes the token', async () => {
+      await identity.remove();
+      expect(storage.set).not.toHaveBeenCalled();
+      expect(storage.remove).toHaveBeenCalledTimes(1);
+      expect(storage.remove).toHaveBeenCalledWith('auth-token');
+    });
   });
 
-  describe('token', () => {
-    describe('setting', () => {
-      it('waits for the storage to be ready', () => {
-        identity.setToken('IAmAToken');
-        expect(storage.ready).toHaveBeenCalledTimes(1);
-      });
-
-      it('sets the token', async () => {
-        await identity.setToken('IAmAToken');
-        expect(storage.remove).not.toHaveBeenCalled();
-        expect(storage.set).toHaveBeenCalledTimes(1);
-        expect(storage.set).toHaveBeenCalledWith('auth-token', 'IAmAToken');
-      });
-
-      it('clears the token', async () => {
-        await identity.setToken('');
-        expect(storage.set).not.toHaveBeenCalled();
-        expect(storage.remove).toHaveBeenCalledTimes(1);
-        expect(storage.remove).toHaveBeenCalledWith('auth-token');
-      });
-
-      it('caches the token', async () => {
-        await identity.setToken('IAmAToken');
-        expect(await identity.getToken()).toEqual('IAmAToken');
-        expect(storage.get).not.toHaveBeenCalled();
-      });
+  describe('getToken', () => {
+    it('waits for the storage to be ready', () => {
+      identity.getToken();
+      expect(storage.ready).toHaveBeenCalledTimes(1);
     });
 
-    describe('getting', () => {
-      it('waits for the storage to be ready', () => {
-        identity.getToken();
-        expect(storage.ready).toHaveBeenCalledTimes(1);
-      });
+    it('gets the stored token', async () => {
+      await identity.getToken();
+      expect(storage.get).toHaveBeenCalledTimes(1);
+      expect(storage.get).toHaveBeenCalledWith('auth-token');
+    });
 
-      it('gets the stored token', async () => {
-        await identity.getToken();
-        expect(storage.get).toHaveBeenCalledTimes(1);
-        expect(storage.get).toHaveBeenCalledWith('auth-token');
-      });
+    it('returns the stored token', async () => {
+      storage.get.and.returnValue(Promise.resolve('ThisIsAToken'));
+      expect(await identity.getToken()).toEqual('ThisIsAToken');
+    });
 
-      it('returns the stored token', async () => {
-        storage.get.and.returnValue(Promise.resolve('ThisIsAToken'));
-        expect(await identity.getToken()).toEqual('ThisIsAToken');
-      });
-
-      it('caches the token', async () => {
-        storage.get.and.returnValue(Promise.resolve('ThisIsAToken'));
-        await identity.getToken();
-        expect(await identity.getToken()).toEqual('ThisIsAToken');
-        expect(storage.get).toHaveBeenCalledTimes(1);
-      });
+    it('caches the token', async () => {
+      storage.get.and.returnValue(Promise.resolve('ThisIsAToken'));
+      await identity.getToken();
+      expect(await identity.getToken()).toEqual('ThisIsAToken');
+      expect(storage.get).toHaveBeenCalledTimes(1);
     });
   });
 });

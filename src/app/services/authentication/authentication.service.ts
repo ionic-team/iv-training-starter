@@ -30,7 +30,6 @@ export class AuthenticationService {
     return this.http.post(`${environment.dataService}/logout`, {}).pipe(
       flatMap(() =>
         from((async () => {
-          await this.identity.setToken('');
           this.identity.remove();
         }
       )()))
@@ -39,8 +38,7 @@ export class AuthenticationService {
 
   private async unpackResponse(r: any): Promise<boolean> {
     if (r.success) {
-      await this.identity.set(r.user);
-      await this.identity.setToken(r.token);
+      await this.identity.set(r.user, r.token);
     }
     return r.success;
   }

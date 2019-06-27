@@ -33,24 +33,16 @@ export class IdentityService {
     }
   }
 
-  set(user: User): void {
+  async set(user: User, token: string): Promise<void> {
     this.user = user;
+    await this.setToken(token);
     this.changed.next(this.user);
   }
 
-  remove(): void {
+  async remove(): Promise<void> {
     this.user = undefined;
+    await this.setToken('');
     this.changed.next(this.user);
-  }
-
-  async setToken(token: string): Promise<void> {
-    this.token = token;
-    await this.storage.ready();
-    if (token) {
-      this.storage.set(this.tokenKey, token);
-    } else {
-      this.storage.remove(this.tokenKey);
-    }
   }
 
   async getToken(): Promise<string> {
@@ -59,5 +51,15 @@ export class IdentityService {
       this.token = await this.storage.get(this.tokenKey);
     }
     return this.token;
+  }
+
+  private async setToken(token: string): Promise<void> {
+    this.token = token;
+    await this.storage.ready();
+    if (token) {
+      this.storage.set(this.tokenKey, token);
+    } else {
+      this.storage.remove(this.tokenKey);
+    }
   }
 }

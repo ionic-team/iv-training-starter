@@ -76,16 +76,6 @@ describe('AuthenticationService', () => {
         httpTestingController.verify();
       }));
 
-      it('stores the token', fakeAsync(() => {
-        authentication.login('thank.you@forthefish.com', 'solongDude').subscribe();
-        const req = httpTestingController.expectOne(`${environment.dataService}/login`);
-        req.flush(response);
-        httpTestingController.verify();
-        tick();
-        expect(identity.setToken).toHaveBeenCalledTimes(1);
-        expect(identity.setToken).toHaveBeenCalledWith('48499501093kf00399sg');
-      }));
-
       it('sets the identity', () => {
         authentication.login('thank.you@forthefish.com', 'solongDude').subscribe();
         const req = httpTestingController.expectOne(`${environment.dataService}/login`);
@@ -97,7 +87,7 @@ describe('AuthenticationService', () => {
           firstName: 'Douglas',
           lastName: 'Adams',
           email: 'thank.you@forthefish.com'
-        });
+        }, '48499501093kf00399sg');
       });
     });
 
@@ -116,14 +106,6 @@ describe('AuthenticationService', () => {
         tick();
         httpTestingController.verify();
       }));
-
-      it('does not store the token', () => {
-        authentication.login('thank.you@forthefish.com', 'solongDude').subscribe();
-        const req = httpTestingController.expectOne(`${environment.dataService}/login`);
-        req.flush(response);
-        httpTestingController.verify();
-        expect(identity.setToken).not.toHaveBeenCalled();
-      });
 
       it('does not set the identity', () => {
         authentication.login('thank.you@forthefish.com', 'solongDude').subscribe();
@@ -144,15 +126,6 @@ describe('AuthenticationService', () => {
       httpTestingController.verify();
       tick();
       expect(fired).toBeTruthy();
-    }));
-
-    it('removes the token from storage', fakeAsync(() => {
-      authentication.logout().subscribe();
-      const req = httpTestingController.expectOne(`${environment.dataService}/logout`);
-      req.flush({});
-      tick();
-      expect(identity.setToken).toHaveBeenCalledTimes(1);
-      expect(identity.setToken).toHaveBeenCalledWith('');
     }));
 
     it('remove the identity', fakeAsync(() => {
