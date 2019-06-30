@@ -23,6 +23,12 @@ export class IdentityService {
     this.changed = new Subject();
   }
 
+  async set(user: User, token: string): Promise<void> {
+    this.user = user;
+    await this.setToken(token);
+    this.changed.next(this.user);
+  }
+
   get(): Observable<User> {
     if (!this.user) {
       return this.http
@@ -33,24 +39,18 @@ export class IdentityService {
     }
   }
 
-  async set(user: User, token: string): Promise<void> {
-    this.user = user;
-    await this.setToken(token);
-    this.changed.next(this.user);
-  }
-
-  async remove(): Promise<void> {
-    this.user = undefined;
-    await this.setToken('');
-    this.changed.next(this.user);
-  }
-
   async getToken(): Promise<string> {
     if (!this.token) {
       await this.storage.ready();
       this.token = await this.storage.get(this.tokenKey);
     }
     return this.token;
+  }
+
+  async remove(): Promise<void> {
+    this.user = undefined;
+    await this.setToken('');
+    this.changed.next(this.user);
   }
 
   private async setToken(token: string): Promise<void> {
