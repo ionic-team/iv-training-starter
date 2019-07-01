@@ -25,6 +25,7 @@
     "@capacitor/android": "~1.0.0",
     "@capacitor/core": "1.0.0",
     "@capacitor/ios": "~1.0.0",
+    "@ionic-enterprise/identity-vault": "~3.4.3",
     "@ionic/angular": "~4.5.0",
     "@ionic/storage": "~2.2.0",
     "core-js": "~2.6.5",
@@ -58,5 +59,10 @@
     "tslint": "~5.17.0",
     "typescript": "~3.2.4"
   },
-  "description": "An Ionic project"
+  "description": "An Ionic project",
+  "cordova": {
+    "plugins": {
+      "@ionic-enterprise/identity-vault": {}
+    }
+  }
 }

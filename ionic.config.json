@@ -1,7 +1,8 @@
 {
   "name": "iv-training-starter",
   "integrations": {
-    "capacitor": {}
+    "capacitor": {},
+    "cordova": {}
   },
   "type": "angular"
 }

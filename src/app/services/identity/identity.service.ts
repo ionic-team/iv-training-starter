@@ -1,10 +1,15 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { Observable, of, Subject } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-import { Storage } from '@ionic/storage';
+import { Platform } from '@ionic/angular';
+import {
+  AuthMode,
+  DefaultSession,
+  IonicIdentityVaultUser
+} from '@ionic-enterprise/identity-vault';
 
 import { environment } from '../../../environments/environment';
 import { User } from '../../models/user';
@@ -12,16 +17,16 @@ import { User } from '../../models/user';
 @Injectable({
   providedIn: 'root'
 })
-export class IdentityService {
-  private tokenKey = 'auth-token';
-  private token: string;
+export class IdentityService extends IonicIdentityVaultUser<DefaultSession> {
   private user: User;
 
-  constructor(private http: HttpClient, private storage: Storage) { }
+  constructor(private http: HttpClient, platform: Platform ) {
+    super(platform, { authMode: AuthMode.SecureStorage });
+  }
 
   async set(user: User, token: string): Promise<void> {
     this.user = user;
-    await this.setToken(token);
+    await this.login({ username: user.email, token });
   }
 
   get(): Observable<User> {
@@ -36,24 +41,13 @@ export class IdentityService {
 
   async getToken(): Promise<string> {
     if (!this.token) {
-      await this.storage.ready();
-      this.token = await this.storage.get(this.tokenKey);
+      await this.restoreSession();
     }
     return this.token;
   }
 
   async remove(): Promise<void> {
     this.user = undefined;
-    await this.setToken('');
-  }
-
-  private async setToken(token: string): Promise<void> {
-    this.token = token;
-    await this.storage.ready();
-    if (token) {
-      this.storage.set(this.tokenKey, token);
-    } else {
-      this.storage.remove(this.tokenKey);
-    }
+    await this.logout();
   }
 }
