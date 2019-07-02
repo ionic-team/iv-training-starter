@@ -8,9 +8,11 @@ import { Platform } from '@ionic/angular';
 import {
   AuthMode,
   DefaultSession,
-  IonicIdentityVaultUser
+  IonicIdentityVaultUser,
+  IonicNativeAuthPlugin
 } from '@ionic-enterprise/identity-vault';
 
+import { BrowserAuthPlugin } from '../browser-auth/browser-auth.plugin';
 import { environment } from '../../../environments/environment';
 import { User } from '../../models/user';
 
@@ -20,7 +22,11 @@ import { User } from '../../models/user';
 export class IdentityService extends IonicIdentityVaultUser<DefaultSession> {
   private user: User;
 
-  constructor(private http: HttpClient, platform: Platform ) {
+  constructor(
+    private browserAuthPlugin: BrowserAuthPlugin,
+    private http: HttpClient,
+    platform: Platform
+  ) {
     super(platform, { authMode: AuthMode.SecureStorage });
   }
 
@@ -49,5 +55,12 @@ export class IdentityService extends IonicIdentityVaultUser<DefaultSession> {
   async remove(): Promise<void> {
     this.user = undefined;
     await this.logout();
+  }
+
+  getPlugin(): IonicNativeAuthPlugin {
+    if ((this.platform as Platform).is('cordova')) {
+      return super.getPlugin();
+    }
+    return this.browserAuthPlugin;
   }
 }
