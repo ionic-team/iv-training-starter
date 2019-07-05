@@ -5,6 +5,9 @@ export function createIdentityServiceMock() {
     get: of(null),
     set: Promise.resolve(),
     remove: Promise.resolve(),
-    getToken: Promise.resolve()
+    getToken: Promise.resolve(),
+    hasStoredSession: Promise.resolve(),
+    getAuthMode: Promise.resolve(),
+    restoreSession: Promise.resolve()
   });
 }

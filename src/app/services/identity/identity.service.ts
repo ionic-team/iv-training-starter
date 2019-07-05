@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-import { Platform } from '@ionic/angular';
+import { Platform, NavController } from '@ionic/angular';
 import {
   AuthMode,
   DefaultSession,
@@ -25,24 +25,30 @@ export class IdentityService extends IonicIdentityVaultUser<DefaultSession> {
   constructor(
     private browserAuthPlugin: BrowserAuthPlugin,
     private http: HttpClient,
+    private navController: NavController,
     platform: Platform
   ) {
-    super(platform, { authMode: AuthMode.SecureStorage });
+    super(platform, { unlockOnAccess: true, hideScreenOnBackground: true, lockAfter: 5000 });
   }
 
   async set(user: User, token: string): Promise<void> {
+    const mode = (await this.isBiometricsAvailable()) ? AuthMode.BiometricOnly : AuthMode.PasscodeOnly;
     this.user = user;
-    await this.login({ username: user.email, token });
+    await this.login({ username: user.email, token }, mode);
   }
 
   get(): Observable<User> {
     if (!this.user) {
-      return this.http
-        .get<User>(`${environment.dataService}/users/current`)
-        .pipe(tap(u => (this.user = u)));
+      return this.http.get<User>(`${environment.dataService}/users/current`).pipe(tap(u => (this.user = u)));
     } else {
       return of(this.user);
     }
+  }
+
+  async restoreSession(): Promise<DefaultSession> {
+    try {
+      return await super.restoreSession();
+    } catch (error) {}
   }
 
   async getToken(): Promise<string> {
@@ -62,5 +68,9 @@ export class IdentityService extends IonicIdentityVaultUser<DefaultSession> {
       return super.getPlugin();
     }
     return this.browserAuthPlugin;
+  }
+
+  onVaultLocked() {
+    this.navController.navigateRoot(['login']);
   }
 }
