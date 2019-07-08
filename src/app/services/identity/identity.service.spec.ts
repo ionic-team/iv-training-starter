@@ -1,26 +1,37 @@
 import { TestBed, inject } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
-import { Platform, NavController } from '@ionic/angular';
+import { Platform, ModalController, NavController } from '@ionic/angular';
 import { Storage } from '@ionic/storage';
 import { AuthMode } from '@ionic-enterprise/identity-vault';
 
-import { createPlatformMock, createStorageMock, createNavControllerMock } from '../../../../test/mocks';
+import {
+  createPlatformMock,
+  createStorageMock,
+  createNavControllerMock,
+  createOverlayElementMock,
+  createOverlayControllerMock
+} from '../../../../test/mocks';
 import { environment } from '../../../environments/environment';
 import { IdentityService } from './identity.service';
-import { User } from 'src/app/models/user';
-import { Title } from '@angular/platform-browser';
-import { tick } from '@angular/core/src/render3';
+import { PinDialogComponent } from '../../pin-dialog/pin-dialog.component';
+import { User } from '../../models/user';
 
 describe('IdentityService', () => {
   let httpTestingController: HttpTestingController;
+  let modal;
   let identity: IdentityService;
 
   beforeEach(() => {
+    modal = createOverlayElementMock('Modal');
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
         IdentityService,
+        {
+          provide: ModalController,
+          useFactory: () => createOverlayControllerMock('ModalController', modal)
+        },
         { provide: NavController, useFactory: createNavControllerMock },
         { provide: Platform, useFactory: createPlatformMock },
         { provide: Storage, useFactory: createStorageMock }
@@ -113,14 +124,20 @@ describe('IdentityService', () => {
       spyOn(identity, 'isBiometricsAvailable').and.returnValue(Promise.resolve(true));
       spyOn(identity, 'login');
       await identity.set(user, 'IAmToken');
-      expect(identity.login).toHaveBeenCalledWith({ username: user.email, token: 'IAmToken' }, AuthMode.BiometricOnly);
+      expect(identity.login).toHaveBeenCalledWith(
+        { username: user.email, token: 'IAmToken' },
+        AuthMode.BiometricOnly
+      );
     });
 
     it('uses passcode if biometrics is not available', async () => {
       spyOn(identity, 'isBiometricsAvailable').and.returnValue(Promise.resolve(false));
       spyOn(identity, 'login');
       await identity.set(user, 'IAmToken');
-      expect(identity.login).toHaveBeenCalledWith({ username: user.email, token: 'IAmToken' }, AuthMode.PasscodeOnly);
+      expect(identity.login).toHaveBeenCalledWith(
+        { username: user.email, token: 'IAmToken' },
+        AuthMode.PasscodeOnly
+      );
     });
   });
 
@@ -180,6 +197,41 @@ describe('IdentityService', () => {
       const token = await identity.getToken();
       expect(identity.restoreSession).not.toHaveBeenCalled();
       expect(token).toEqual('fubbily-doo-dah');
+    });
+  });
+
+  describe('onPasscodeRequest', () => {
+    beforeEach(() => {
+      modal.onDidDismiss.and.returnValue(Promise.resolve({ role: 'cancel' }));
+    });
+
+    [true, false].forEach(setPasscode => {
+      it(`creates a PIN dialog, setting passcode: ${setPasscode}`, async () => {
+        const modalController = TestBed.get(ModalController);
+        await identity.onPasscodeRequest(setPasscode);
+        expect(modalController.create).toHaveBeenCalledTimes(1);
+        expect(modalController.create).toHaveBeenCalledWith({
+          backdropDismiss: false,
+          component: PinDialogComponent,
+          componentProps: {
+            setPasscodeMode: setPasscode
+          }
+        });
+      });
+    });
+
+    it('presents the modal', async () => {
+      await identity.onPasscodeRequest(false);
+      expect(modal.present).toHaveBeenCalledTimes(1);
+    });
+
+    it('resolves to the PIN', async () => {
+      modal.onDidDismiss.and.returnValue(Promise.resolve({ data: '4203', role: 'OK' }));
+      expect(await identity.onPasscodeRequest(true)).toEqual('4203');
+    });
+
+    it('resolves to an empty string if the PIN is undefined', async () => {
+      expect(await identity.onPasscodeRequest(true)).toEqual('');
     });
   });
 

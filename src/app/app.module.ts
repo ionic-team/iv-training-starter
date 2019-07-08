@@ -9,6 +9,7 @@ import { IonicStorageModule } from '@ionic/storage';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { httpInterceptorProviders } from './services/http-interceptors';
+import { PinDialogComponentModule } from './pin-dialog/pin-dialog.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -18,7 +19,8 @@ import { httpInterceptorProviders } from './services/http-interceptors';
     HttpClientModule,
     IonicModule.forRoot(),
     IonicStorageModule.forRoot(),
-    AppRoutingModule
+    AppRoutingModule,
+    PinDialogComponentModule
   ],
   providers: [
     httpInterceptorProviders,

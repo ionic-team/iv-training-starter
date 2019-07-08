@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-import { Platform, NavController } from '@ionic/angular';
+import { Platform, NavController, ModalController } from '@ionic/angular';
 import {
   AuthMode,
   DefaultSession,
@@ -14,6 +14,7 @@ import {
 
 import { BrowserAuthPlugin } from '../browser-auth/browser-auth.plugin';
 import { environment } from '../../../environments/environment';
+import { PinDialogComponent } from '../../pin-dialog/pin-dialog.component';
 import { User } from '../../models/user';
 
 @Injectable({
@@ -25,6 +26,7 @@ export class IdentityService extends IonicIdentityVaultUser<DefaultSession> {
   constructor(
     private browserAuthPlugin: BrowserAuthPlugin,
     private http: HttpClient,
+    private modalController: ModalController,
     private navController: NavController,
     platform: Platform
   ) {
@@ -32,14 +34,18 @@ export class IdentityService extends IonicIdentityVaultUser<DefaultSession> {
   }
 
   async set(user: User, token: string): Promise<void> {
-    const mode = (await this.isBiometricsAvailable()) ? AuthMode.BiometricOnly : AuthMode.PasscodeOnly;
+    const mode = (await this.isBiometricsAvailable())
+      ? AuthMode.BiometricOnly
+      : AuthMode.PasscodeOnly;
     this.user = user;
     await this.login({ username: user.email, token }, mode);
   }
 
   get(): Observable<User> {
     if (!this.user) {
-      return this.http.get<User>(`${environment.dataService}/users/current`).pipe(tap(u => (this.user = u)));
+      return this.http
+        .get<User>(`${environment.dataService}/users/current`)
+        .pipe(tap(u => (this.user = u)));
     } else {
       return of(this.user);
     }
@@ -72,5 +78,18 @@ export class IdentityService extends IonicIdentityVaultUser<DefaultSession> {
 
   onVaultLocked() {
     this.navController.navigateRoot(['login']);
+  }
+
+  async onPasscodeRequest(isPasscodeSetRequest: boolean): Promise<string> {
+    const dlg = await this.modalController.create({
+      backdropDismiss: false,
+      component: PinDialogComponent,
+      componentProps: {
+        setPasscodeMode: isPasscodeSetRequest
+      }
+    });
+    dlg.present();
+    const { data } = await dlg.onDidDismiss();
+    return Promise.resolve(data || '');
   }
 }
