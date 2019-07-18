@@ -1,6 +1,7 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
-import { Subscription } from 'rxjs';
+import { Observable } from 'rxjs';
+import { flatMap } from 'rxjs/operators';
 
 import { AuthenticationService } from '../services/authentication/authentication.service';
 import { TeaCategory } from '../models/tea-category';
@@ -11,9 +12,8 @@ import { TeaCategoriesService } from '../services/tea-categories/tea-categories.
   templateUrl: 'tea-categories.page.html',
   styleUrls: ['tea-categories.page.scss']
 })
-export class TeaCategoriesPage implements OnDestroy, OnInit {
-  private subscription: Subscription;
-  categories: Array<TeaCategory>;
+export class TeaCategoriesPage implements OnInit {
+  categories$: Observable<Array<TeaCategory>>;
 
   constructor(
     private authentication: AuthenticationService,
@@ -22,17 +22,8 @@ export class TeaCategoriesPage implements OnDestroy, OnInit {
   ) {}
 
   ngOnInit() {
-    this.subscription = this.teaCategories.changed.subscribe(() => this.getData());
-  }
-
-  ionViewDidEnter() {
-    this.getData();
-  }
-
-  ngOnDestroy() {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-    }
+    this.categories$ = this.teaCategories.changed.pipe(flatMap(() => this.teaCategories.getAll()));
+    setTimeout(() => this.teaCategories.changed.next());
   }
 
   logout() {
@@ -41,9 +32,5 @@ export class TeaCategoriesPage implements OnDestroy, OnInit {
 
   editCategory(id: number) {
     this.navController.navigateForward(['edit-tea-category', id]);
-  }
-
-  private getData() {
-    this.teaCategories.getAll().subscribe(x => (this.categories = x));
   }
 }
