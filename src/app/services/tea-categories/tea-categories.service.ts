@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, Subject } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 import { environment } from '../../../environments/environment';
@@ -10,10 +10,14 @@ import { TeaCategory } from '../../models/tea-category';
   providedIn: 'root'
 })
 export class TeaCategoriesService {
-  changed: Subject<void>;
+  changedSubject: BehaviorSubject<void>;
 
   constructor(private http: HttpClient) {
-    this.changed = new Subject();
+    this.changedSubject = new BehaviorSubject(null);
+  }
+
+  get changed() {
+    return this.changedSubject.asObservable();
   }
 
   getAll(): Observable<Array<TeaCategory>> {
@@ -34,6 +38,6 @@ export class TeaCategoriesService {
         `${environment.dataService}/tea-categories/${teaCategory.id}`,
         teaCategory
       )
-      .pipe(tap(() => this.changed.next()));
+      .pipe(tap(() => this.changedSubject.next()));
   }
 }

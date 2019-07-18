@@ -23,7 +23,6 @@ export class TeaCategoriesPage implements OnInit {
 
   ngOnInit() {
     this.categories$ = this.teaCategories.changed.pipe(flatMap(() => this.teaCategories.getAll()));
-    setTimeout(() => this.teaCategories.changed.next());
   }
 
   logout() {
