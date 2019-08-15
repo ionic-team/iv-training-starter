@@ -17,16 +17,11 @@ export class IdentityService {
   private token: string;
   private user: User;
 
-  changed: Subject<User>;
-
-  constructor(private http: HttpClient, private storage: Storage) {
-    this.changed = new Subject();
-  }
+  constructor(private http: HttpClient, private storage: Storage) { }
 
   async set(user: User, token: string): Promise<void> {
     this.user = user;
     await this.setToken(token);
-    this.changed.next(this.user);
   }
 
   get(): Observable<User> {
@@ -50,7 +45,6 @@ export class IdentityService {
   async remove(): Promise<void> {
     this.user = undefined;
     await this.setToken('');
-    this.changed.next(this.user);
   }
 
   private async setToken(token: string): Promise<void> {

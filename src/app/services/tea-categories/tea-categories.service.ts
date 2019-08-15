@@ -10,14 +10,13 @@ import { TeaCategory } from '../../models/tea-category';
   providedIn: 'root'
 })
 export class TeaCategoriesService {
-  changedSubject: BehaviorSubject<void>;
+  private changedSubject: BehaviorSubject<void>;
+  get changed() {
+    return this.changedSubject.asObservable();
+  }
 
   constructor(private http: HttpClient) {
     this.changedSubject = new BehaviorSubject(null);
-  }
-
-  get changed() {
-    return this.changedSubject.asObservable();
   }
 
   getAll(): Observable<Array<TeaCategory>> {
