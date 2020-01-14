@@ -1,13 +1,15 @@
 import { Component } from '@angular/core';
 
 import { Plugins, StatusBarStyle } from '@capacitor/core';
+import { Platform } from '@ionic/angular';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html'
 })
 export class AppComponent {
-  constructor() {
+  constructor(platform: Platform) {
+    console.log(platform.platforms());
     this.initializeApp();
   }
 
