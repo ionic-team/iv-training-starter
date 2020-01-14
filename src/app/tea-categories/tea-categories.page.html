@@ -10,7 +10,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content padding>
+<ion-content class="ion-padding">
   <ion-list>
     <ion-item *ngFor="let category of (categories$ | async)" (click)="editCategory(category.id)">
       <ion-label>
