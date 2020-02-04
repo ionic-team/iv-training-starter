@@ -8,18 +8,15 @@ import { Platform } from '@ionic/angular';
   templateUrl: 'app.component.html'
 })
 export class AppComponent {
-  constructor(platform: Platform) {
-    console.log(platform.platforms());
+  constructor(private platform: Platform) {
     this.initializeApp();
   }
 
   async initializeApp() {
     const { SplashScreen, StatusBar } = Plugins;
-    try {
+    if (this.platform.is('hybrid')) {
       await SplashScreen.hide();
       await StatusBar.setStyle({ style: StatusBarStyle.Light });
-    } catch (err) {
-      console.log('This is normal in a browser', err);
     }
   }
 }
