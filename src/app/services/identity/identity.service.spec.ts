@@ -20,7 +20,7 @@ describe('IdentityService', () => {
       providers: [IdentityService, { provide: Storage, useValue: storage }]
     });
 
-    httpTestingController = TestBed.get(HttpTestingController);
+    httpTestingController = TestBed.inject(HttpTestingController);
   });
 
   beforeEach(inject([IdentityService], (service: IdentityService) => {
@@ -84,17 +84,15 @@ describe('IdentityService', () => {
 
   describe('set', () => {
     const user: User = {
-          id: 314159,
-          firstName: 'Sherry',
-          lastName: 'Pigh',
-          email: 'alamode@test.org'
+      id: 314159,
+      firstName: 'Sherry',
+      lastName: 'Pigh',
+      email: 'alamode@test.org'
     };
 
     it('sets the user, caching it', async () => {
-      await identity.set( user, 'IAmToken');
-      identity.get().subscribe(u =>
-        expect(u).toEqual(user)
-      );
+      await identity.set(user, 'IAmToken');
+      identity.get().subscribe(u => expect(u).toEqual(user));
       httpTestingController.verify();
     });
 

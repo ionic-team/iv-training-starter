@@ -20,7 +20,7 @@ describe('AuthenticationService', () => {
       providers: [AuthenticationService, { provide: IdentityService, useValue: identity }]
     });
 
-    httpTestingController = TestBed.get(HttpTestingController);
+    httpTestingController = TestBed.inject(HttpTestingController);
   });
 
   beforeEach(inject([AuthenticationService], (service: AuthenticationService) => {
@@ -67,9 +67,7 @@ describe('AuthenticationService', () => {
       });
 
       it('resolves true', fakeAsync(() => {
-        authentication
-          .login('thank.you@forthefish.com', 'solongDude')
-          .subscribe(r => expect(r).toEqual(true));
+        authentication.login('thank.you@forthefish.com', 'solongDude').subscribe(r => expect(r).toEqual(true));
         const req = httpTestingController.expectOne(`${environment.dataService}/login`);
         req.flush(response);
         tick();
@@ -82,12 +80,15 @@ describe('AuthenticationService', () => {
         req.flush(response);
         httpTestingController.verify();
         expect(identity.set).toHaveBeenCalledTimes(1);
-        expect(identity.set).toHaveBeenCalledWith({
-          id: 42,
-          firstName: 'Douglas',
-          lastName: 'Adams',
-          email: 'thank.you@forthefish.com'
-        }, '48499501093kf00399sg');
+        expect(identity.set).toHaveBeenCalledWith(
+          {
+            id: 42,
+            firstName: 'Douglas',
+            lastName: 'Adams',
+            email: 'thank.you@forthefish.com'
+          },
+          '48499501093kf00399sg'
+        );
       });
     });
 
@@ -98,9 +99,7 @@ describe('AuthenticationService', () => {
       });
 
       it('resolves false', fakeAsync(() => {
-        authentication
-          .login('thank.you@forthefish.com', 'solongDude')
-          .subscribe(r => expect(r).toEqual(false));
+        authentication.login('thank.you@forthefish.com', 'solongDude').subscribe(r => expect(r).toEqual(false));
         const req = httpTestingController.expectOne(`${environment.dataService}/login`);
         req.flush(response);
         tick();

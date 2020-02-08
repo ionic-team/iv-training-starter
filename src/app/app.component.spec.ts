@@ -36,8 +36,8 @@ describe('AppComponent', () => {
   describe('initialization', () => {
     describe('as a hybrid mobile app', () => {
       beforeEach(() => {
-        const platform = TestBed.get(Platform);
-        platform.is.withArgs('hybrid').and.returnValue(true);
+        const platform = TestBed.inject(Platform);
+        (platform as any).is.withArgs('hybrid').and.returnValue(true);
       });
 
       it('hides the splash screen', fakeAsync(() => {

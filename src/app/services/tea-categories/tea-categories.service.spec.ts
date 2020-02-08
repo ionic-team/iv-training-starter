@@ -1,8 +1,5 @@
 import { TestBed, inject } from '@angular/core/testing';
-import {
-  HttpClientTestingModule,
-  HttpTestingController
-} from '@angular/common/http/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
 import { TeaCategory } from '../../models/tea-category';
 import { TeaCategoriesService } from './tea-categories.service';
@@ -21,7 +18,7 @@ describe('TeaCategoriesService', () => {
       providers: [TeaCategoriesService]
     });
 
-    httpTestingController = TestBed.get(HttpTestingController);
+    httpTestingController = TestBed.inject(HttpTestingController);
   });
 
   beforeEach(inject([TeaCategoriesService], (service: TeaCategoriesService) => {
